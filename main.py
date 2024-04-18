@@ -209,4 +209,5 @@ if __name__ == "__main__":
         # run_config_ecdn(SECRETID, SECRETKEY, my_domain, cert_id)
 
         # 对腾讯云EO的支持
-        run_config_teo(SECRETID, SECRETKEY, "zone-****", my_domain, cert_id)
+        if config.ZONE_ID:
+            run_config_teo(SECRETID, SECRETKEY, config.ZONE_ID, my_domain, cert_id)

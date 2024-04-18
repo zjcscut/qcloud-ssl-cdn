@@ -22,7 +22,7 @@ CDN_DOMAIN = ["blog.whuzfb.cn"]
 SECRETID = "AKeee5555512345677777123456788889876"
 SECRETKEY = "A71234567890abcdefedcba098765432"
 
-# 控制功能开关
+# CDN：控制功能开关
 # 是否进行上传证书文件的操作（根据CER_FILE和KEY_FILE）
 UPLOAD_SSL = True
 # 以下为HTTPS额外功能
@@ -53,3 +53,7 @@ PURGE_URL = True
 # https://blog.whuzfb.cn/img/me2.jpg
 # https://blog.whuzfb.cn/img/home-bg.jpg
 URLS_FILE = "urls.txt"
+
+# 仅用于边缘安全加速平台EO更换SSL证书，不用于CDN
+# 区域ID：可以手动利用函数get_teo_zones_list获取所有的加速区域ID；格式为 zone-xxxxxx
+ZONE_ID = ""

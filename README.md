@@ -1,8 +1,9 @@
 ## 腾讯云自动SSL证书上传及替换
 功能：  
-* 把本地的SSL证书上传到腾讯云[SSL证书](https://console.cloud.tencent.com/ssl)，并记录id
-* 为CDN服务更换指定id的SSL证书
-* 根据网址，批量预热URL
+* [SSL证书](https://console.cloud.tencent.com/ssl)：把本地的SSL证书上传到腾讯云SSL证书，并记录id
+* [CDN服务](https://console.cloud.tencent.com/cdn)：为CDN服务更换指定id的SSL证书；根据网址，批量预热URL
+* [ECDN服务](https://console.cloud.tencent.com/ecdn)：为ECDN服务更换指定id的SSL证书
+* [EO平台](https://console.cloud.tencent.com/edgeone)：为边缘安全加速平台更换指定id的SSL证书
 
 目的：
 * 把利用[acme.sh](https://github.com/acmesh-official/acme.sh)申请的`Let's Encrypt`证书上传到腾讯云
@@ -18,7 +19,7 @@
 每月 1 号凌晨 2 点定时执行证书更新
 
 * `ACME_DNS_TYPE`: Acme 的 dns 类型，你可以选择你的 dns 类型并配置[环境变量密钥](https://github.com/acmesh-official/acme.sh/wiki/dnsapi)
-* `ACME_DOMAIN`: 你的顶级域名，例如：monlor.com，自动申请证书 monlor.com/*.monlor.com
+* `ACME_DOMAIN`: 你的顶级域名，例如：whuzfb.cn，自动申请证书 whuzfb.cn/*.whuzfb.cn
 * `SECRETID`: 腾讯云 Secret Id
 * `SECRETKEY`: 腾讯云 Secret Key
 * `CDN_DOMAIN`: CDN 域名，多个域名用逗号分隔
@@ -31,12 +32,12 @@ docker run -d \
   -e DP_Id=xxx \
   -e DP_Key=xxx \ 
   -e ACME_DNS_TYPE=dns_dp \ 
-  -e ACME_DOMAIN=monlor.com \
+  -e ACME_DOMAIN=whuzfb.cn \
   -e SECRETID=xxx \
   -e SECRETKEY=xxx \
-  -e CDN_DOMAIN=www.monlor.com \
+  -e CDN_DOMAIN=www.whuzfb.cn \
   -e RUN_NOW=true \
-  ghcr.io/monlor/qcloud-ssl-cdn:main
+  ghcr.io/zfb132/qcloud-ssl-cdn:main
 ```
 
 #### 其他变量
@@ -50,7 +51,7 @@ docker run -d \
 Fork 此项目，配置以下 Github Action Secrets
 
 * `ACME_DNS_TYPE`: Acme 的 dns 类型，你可以选择你的 dns 类型并配置[环境变量密钥](https://github.com/acmesh-official/acme.sh/wiki/dnsapi)
-* `ACME_DOMAIN`: 你的顶级域名，例如：monlor.com，自动申请证书 monlor.com/*.monlor.com
+* `ACME_DOMAIN`: 你的顶级域名，例如：`whuzfb.cn`，自动申请证书 `whuzfb.cn/*.whuzfb.cn`
 * `SECRETID`: 腾讯云 Secret Id
 * `SECRETKEY`: 腾讯云 Secret Key
 * `CDN_DOMAIN`: CDN 域名，多个域名用逗号分隔
@@ -74,11 +75,11 @@ acme.sh --issue  -d "whuzfb.cn" -d "*.whuzfb.cn" --dns dns_dp
 然后重命名为`config.py`
 
 ## 主要函数
-`ssl.get_cert_list(client)`：获取所有的SSL证书列表  
-`ssl.get_cert_info(client, cert_id)`：根据id获取SSL证书的信息  
-`ssl.get_cert_detail(client, cert_id)`：根据id获取SSL证书的详情  
-`ssl.delete_cert(client, cert_id)`：删除指定id的SSL证书  
-`ssl.upload_cert(client, local_cert_info)`：把本地的SSL证书上传到腾讯云，返回新证书的id  
+`qssl.get_cert_list(client)`：获取所有的SSL证书列表  
+`qssl.get_cert_info(client, cert_id)`：根据id获取SSL证书的信息  
+`qssl.get_cert_detail(client, cert_id)`：根据id获取SSL证书的详情  
+`qssl.delete_cert(client, cert_id)`：删除指定id的SSL证书  
+`qssl.upload_cert(client, local_cert_info)`：把本地的SSL证书上传到腾讯云，返回新证书的id  
 
 
 `cdn.get_cdn_detail_info(client)`：获取所有CDN的详细信息，返回列表  
@@ -93,7 +94,6 @@ acme.sh --issue  -d "whuzfb.cn" -d "*.whuzfb.cn" --dns dns_dp
 `ecdn.get_ecdn_detail_info(client)`：获取所有ECDN的详细信息，返回列表  
 `ecdn.update_ecdn_ssl(client, domain, cert_id)`：为指定域名的CDN的更换SSL证书  
 
-## 对腾讯云边缘安全加速平台（EO）的支持
-
-手动利用函数`get_teo_zones_list`获取所有的加速区域ID，根据需要进行设置
-与CDN类似，`run_config_teo(SECRETID, SECRETKEY, "zone-****", my_domain, cert_id)`
+`teo.get_teo_zones_list(client)`：获取边缘安全加速平台所有的加速区域`zoneID`列表
+`teo.get_teo_domains_list(client, zone_id)`：获取指定加速区域的域名列表
+`teo.update_teo_ssl(client, zoneid, hostname, cert_id)`：为指定域名的加速区域的对应域名更换SSL证书
