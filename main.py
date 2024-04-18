@@ -1,9 +1,6 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-# author: 'zfb'
-# time: 2020-12-02 15:56
-from api import cdn, ecdn, ssl, tools
+from api import cdn, ecdn, qssl, tools, teo
 import config
+
 
 def run_config_ssl(id, key, cer_file, key_file):
     '''上传SSl证书到腾讯云SSL证书管理，返回新证书的id
@@ -17,8 +14,9 @@ def run_config_ssl(id, key, cer_file, key_file):
         "key": tools.read_file(key_file),
         "type": "SVR"
     }
-    ssl_client = ssl.get_ssl_client_instance(id, key)
-    cert_list = ssl.get_cert_list(ssl_client)
+    ssl_client = qssl.get_ssl_client_instance(id, key)
+    """
+    cert_list = qssl.get_cert_list(ssl_client)
     for cert in cert_list:
         # 获取每个证书的id
         cert_id = cert.CertificateId
@@ -28,10 +26,11 @@ def run_config_ssl(id, key, cer_file, key_file):
         #     # delete_cert(client, cert_id)
         #     # break
         #     print(cert_id)
+    """
     # 上传证书，获取新证书的id
-    id = ssl.upload_cert(ssl_client, cert_info)
-    if len(id)>0:
-        return id
+    certid = qssl.upload_cert(ssl_client, cert_info)
+    if len(certid) > 0:
+        return certid
     else:
         exit("获取新证书id失败")
 
@@ -50,23 +49,25 @@ def run_config_cdn(id, key, domain, cert_id):
     # generate_https(https)
     cdn.update_cdn_ssl(cdn_client, domain, cert_id)
 
+
 def https_options_enabler(id, key, domain, http2, hsts, age, hsts_subdomain, ocsp):
     '''开启HTTPS配置中的部分选项
     '''
     cdn_client = cdn.get_cdn_client_instance(id, key)
     cdn.update_cdn_https_options(cdn_client, domain, http2, hsts, age, hsts_subdomain, ocsp)
 
+
 def delete_old_ssls(id, key, cdn_domain, ignore_id):
     '''删除某个CDN的，除ignore_id以外的所有ssl证书
     '''
-    ssl_client = ssl.get_ssl_client_instance(id, key)
-    cert_list = ssl.get_cert_list(ssl_client)
+    ssl_client = qssl.get_ssl_client_instance(id, key)
+    cert_list = qssl.get_cert_list(ssl_client)
     for cert in cert_list:
         cert_id = cert.CertificateId
         # 刚上传的这个证书不删除
         if cert_id == ignore_id:
             continue
-        cert_info = ssl.get_cert_info(ssl_client, cert_id)
+        cert_info = qssl.get_cert_info(ssl_client, cert_id)
         cert_domain_and_alt_name = [cert_info.Domain] + cert_info.SubjectAltName
         matched = False
         # 判断域名匹配
@@ -84,7 +85,7 @@ def delete_old_ssls(id, key, cdn_domain, ignore_id):
                     break
         # 根据结果删除证书
         if matched:
-            ssl.delete_cert(ssl_client, cert_id)
+            qssl.delete_cert(ssl_client, cert_id)
 
 
 def run_config_ecdn(id, key, domain, cert_id):
@@ -174,6 +175,15 @@ def run_purge_url(id, key, domain, urls_file):
     print("成功刷新{}个URL".format(cnt))
 
 
+def run_config_teo(id, key, zoneid, host, cert_id):
+    '''该函数实现为EO更新ssl证书的功能
+    '''
+    teo_client = teo.get_teo_client_instance(id, key)
+    teos = teo.get_teo_domains_list(teo_client, zoneid)
+    # generate_https(https)
+    teo.update_teo_ssl(teo_client, zoneid, host, cert_id)
+
+
 if __name__ == "__main__":
     SECRETID = config.SECRETID
     SECRETKEY = config.SECRETKEY
@@ -183,6 +193,7 @@ if __name__ == "__main__":
     else:
         cert_id = config.CERT_ID
     for my_domain in config.CDN_DOMAIN:
+
         if config.UPDATE_SSL:
             run_config_cdn(SECRETID, SECRETKEY, my_domain, cert_id)
         if config.ENABLE_HSTS or config.ENABLE_OCSP or config.ENABLE_HTTP2:
@@ -197,3 +208,5 @@ if __name__ == "__main__":
         # ecdn是全球加速服务，与CDN不同，本账号没有开通该功能
         # run_config_ecdn(SECRETID, SECRETKEY, my_domain, cert_id)
 
+        # 对腾讯云EO的支持
+        run_config_teo(SECRETID, SECRETKEY, "zone-****", my_domain, cert_id)

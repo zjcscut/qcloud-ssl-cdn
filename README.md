@@ -92,3 +92,8 @@ acme.sh --issue  -d "whuzfb.cn" -d "*.whuzfb.cn" --dns dns_dp
 `ecdn.get_ecdn_basic_info(client)`：获取所有ECDN（全球加速服务）的基本信息，返回列表  
 `ecdn.get_ecdn_detail_info(client)`：获取所有ECDN的详细信息，返回列表  
 `ecdn.update_ecdn_ssl(client, domain, cert_id)`：为指定域名的CDN的更换SSL证书  
+
+## 对腾讯云边缘安全加速平台（EO）的支持
+
+手动利用函数`get_teo_zones_list`获取所有的加速区域ID，根据需要进行设置
+与CDN类似，`run_config_teo(SECRETID, SECRETKEY, "zone-****", my_domain, cert_id)`
