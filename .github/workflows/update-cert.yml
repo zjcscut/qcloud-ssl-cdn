@@ -20,8 +20,8 @@ jobs:
 
       - name: Update Cert
         env:
-          DP_Id: ${{ secrets.DP_Id }}
-          DP_Key: ${{ secrets.DP_Key }}
+          DP_Id: ${{ secrets.DP_ID }}
+          DP_Key: ${{ secrets.DP_KEY }}
           ACME_DNS_TYPE: ${{ secrets.ACME_DNS_TYPE }}
           ACME_DOMAIN: ${{ secrets.ACME_DOMAIN }}
           SECRETID: ${{ secrets.SECRETID }}
@@ -31,17 +31,3 @@ jobs:
           ACME_HOME: /home/runner/.acme.sh
           WORK_DIR: .
         run: sh ./docker/update.sh
-
-      - name: Notification
-        uses: monlor/bark-action@v3
-        if: always()
-        with:
-          host: ${{ secrets.BARK_HOST}} # not required
-          key: ${{ secrets.BARK_KEY }}   # Your secret key
-          title: Github Actions
-          body: 'Your tencent cdn certs update ${{ job.status }}！'
-          isArchive: 1
-          url: 'github://github.com/${{ github.repository }}'
-          group: Github
-          icon: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
-          copy: ${{ steps.meta.outputs.tags }}
